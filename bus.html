@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3A 富泰邨 → 深圳灣口岸</title>
+<style>
+  :root{
+    --bg:#0e1116;
+    --card:#171b22;
+    --card2:#1e242d;
+    --line:#2a313c;
+    --text:#eef2f7;
+    --muted:#8d99a8;
+    --ctb:#ffd400;
+    --go:#3ddc84;
+    --warn:#ffb020;
+    --err:#ff5c5c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 700px at 50% -10%, #1b2430 0%, var(--bg) 60%);
+    background-color:var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,-apple-system,sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+    min-height:100%;
+  }
+  .app{width:100%;max-width:620px}
+
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .routeNo{
+    background:var(--ctb);color:#111;
+    font-weight:800;font-size:30px;letter-spacing:.5px;
+    padding:8px 16px;border-radius:14px;
+    line-height:1;box-shadow:0 6px 20px rgba(255,212,0,.18);
+  }
+  .dir{display:flex;flex-direction:column;gap:6px;min-width:0}
+  .dir .row{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600}
+  .dir .arrow{color:var(--ctb);font-weight:800}
+  .dir .sub{font-size:12.5px;color:var(--muted);font-weight:500}
+  .from{color:var(--text)}
+  .to{color:var(--text)}
+
+  .card{
+    background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:10px 8px;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+
+  .stopRow{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:10px 14px 14px;border-bottom:1px solid var(--line);
+  }
+  .stopName{font-size:17px;font-weight:700}
+  .stopName small{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
+  .badge{
+    font-size:11px;font-weight:700;color:#0e1116;background:var(--go);
+    padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+
+  ul{list-style:none;margin:0;padding:6px 8px}
+  li{
+    display:flex;align-items:center;gap:16px;
+    padding:14px 10px;border-radius:14px;
+  }
+  li + li{border-top:1px solid var(--line)}
+  li.soon{background:linear-gradient(90deg,rgba(255,212,0,.10),transparent 70%)}
+
+  .mins{
+    min-width:150px;
+    display:flex;align-items:baseline;gap:7px;
+  }
+  .mins .num{
+    font-size:46px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;
+    letter-spacing:-1px;
+  }
+  .mins .unit{font-size:14px;color:var(--muted);font-weight:600}
+  .mins.arriving .num{font-size:30px;color:var(--go);letter-spacing:0}
+
+  .meta{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+  .meta .etaTime{color:var(--text);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+  .rmk{color:var(--warn);font-size:12px;margin-top:2px}
+
+  .status{padding:26px 18px 30px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
+  .status .big{display:block;font-size:34px;margin-bottom:6px}
+  .status.error{color:var(--err)}
+
+  footer{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-top:14px;font-size:12px;color:var(--muted);padding:0 4px;
+  }
+  .left{display:flex;align-items:center;gap:8px;min-width:0}
+  #dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+  #dot.ok{background:var(--go);box-shadow:0 0 8px var(--go)}
+  #dot.busy{background:var(--warn)}
+  #dot.bad{background:var(--err)}
+  button{
+    background:transparent;color:var(--muted);border:1px solid var(--line);
+    border-radius:9px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;
+  }
+  button:hover{color:var(--text);border-color:#3c4654}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="routeNo">B3A</div>
+    <div class="dir">
+      <div class="row"><span class="from">富泰邨</span><span class="arrow">→</span><span class="to">深圳灣口岸</span></div>
+      <div class="sub">Fu Tai Estate &nbsp;→&nbsp; Shenzhen Bay Port</div>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="stopRow">
+      <div class="stopName">
+        富泰邨, 青山公路
+        <small>Fu Tai Estate, Castle Peak Road · 站 003261</small>
+      </div>
+      <div class="badge" id="dirBadge">往深圳灣口岸</div>
+    </div>
+    <div id="listWrap"><ul id="list"></ul></div>
+  </div>
+
+  <footer>
+    <div class="left"><span id="dot"></span><span id="status">載入中…</span></div>
+    <button id="refresh">立即更新</button>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var COMPANY   = "CTB";          // 城巴 Citybus
+  var ROUTE     = "B3A";
+  var STOP_ID   = "003261";       // 富泰邨, 青山公路 (Fu Tai Estate)
+  var REFRESH_MS = 30000;         // 每 30 秒更新
+
+  // DATA.GOV.HK — Citybus (CTB) real-time ETA API
+  var BASE = "https://rt.data.gov.hk/v2/transport/citybus";
+  var ETA_URL = BASE + "/eta/" + COMPANY + "/" + STOP_ID + "/" + ROUTE;
+
+  var list      = document.getElementById("list");
+  var listWrap  = document.getElementById("listWrap");
+  var statusEl  = document.getElementById("status");
+  var dot       = document.getElementById("dot");
+  var refreshBtn = document.getElementById("refresh");
+
+  var nextRefreshAt = 0;
+  var lastPayload   = null;
+  var inFlight      = false;
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  // 香港時間
+  function hkParts(date) {
+    try {
+      var f = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Hong_Kong",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+      });
+      var o = {};
+      f.formatToParts(date).forEach(function (p) { o[p.type] = p.value; });
+      return o;
+    } catch (e) {
+      return { hour: pad(date.getHours()), minute: pad(date.getMinutes()), second: pad(date.getSeconds()) };
+    }
+  }
+
+  function clockHHMM(d) {
+    var p = hkParts(d);
+    return p.hour + ":" + p.minute;
+  }
+
+  // 分鐘 = 到達時間 - 現在，向下取整
+  function minutesUntil(etaDate, now) {
+    return Math.floor((etaDate.getTime() - now) / 60000);
+  }
+
+  function setStatus(text, state) {
+    statusEl.textContent = text;
+    dot.className = state || "";
+  }
+
+  function showMessage(big, text) {
+    listWrap.innerHTML =
+      '<div class="status"><span class="big">' + big + '</span>' + text + '</div>';
+    list.innerHTML = "";
+  }
+
+  function render() {
+    if (!lastPayload) return;
+
+    var now = Date.now();
+    var items = (lastPayload.data || []).filter(function (e) {
+      return e && e.eta && !isNaN(new Date(e.eta).getTime());
+    });
+
+    // 只保留未開出的班次，最早在前
+    items = items.filter(function (e) { return new Date(e.eta).getTime() > now - 45000; });
+    items.sort(function (a, b) { return new Date(a.eta) - new Date(b.eta); });
+    items = items.slice(0, 4);
+
+    if (!listWrap.querySelector("ul")) { listWrap.innerHTML = '<ul id="list"></ul>'; }
+    list = document.getElementById("list");
+
+    if (!items.length) {
+      showMessage("🌙", "現時沒有即將開出的班次<br><span style=\"font-size:12px\">No upcoming departures right now</span>");
+      return;
+    }
+
+    var rows = items.map(function (e) {
+      var eta = new Date(e.eta);
+      var m = minutesUntil(eta, now);
+      var arriving = m <= 0;
+      var label = arriving
+        ? '<span class="num">即將到達</span>'
+        : '<span class="num">' + m + '</span><span class="unit">分鐘 min</span>';
+
+      var rmk = e.rmk_tc || e.rmk_en || "";
+      return '<li class="' + (arriving || m <= 3 ? "soon" : "") + '">' +
+               '<div class="mins' + (arriving ? " arriving" : "") + '">' + label + '</div>' +
+               '<div class="meta">' +
+                 '<span class="etaTime">' + clockHHMM(eta) + '</span>' +
+                 '<span>' + (e.dest_tc || "深圳灣口岸") + ' · 尾站 ' + (e.seq || 15) + '</span>' +
+                 (rmk ? '<span class="rmk">' + rmk + '</span>' : '') +
+               '</div>' +
+             '</li>';
+    });
+
+    list.innerHTML = rows.join("");
+  }
+
+  function tick() {
+    if (lastPayload) {
+      render();
+      var secs = Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+      var t = lastPayload._updatedAt ? clockHHMM(new Date(lastPayload._updatedAt)) : "--:--";
+      setStatus("最後更新 " + t + " · " + secs + " 秒後更新", "ok");
+    }
+  }
+
+  function fetchETA() {
+    if (inFlight) return;
+    inFlight = true;
+    dot.className = "busy";
+
+    // cache-buster：確保每次都拿最新資料（API 本身有 45 秒快取）
+    var url = ETA_URL + "?_=" + Date.now();
+
+    fetch(url, { cache: "no-store", headers: { "Accept": "application/json" } })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (json) {
+        lastPayload = { data: json.data || [], _updatedAt: Date.now() };
+        nextRefreshAt = Date.now() + REFRESH_MS;
+        inFlight = false;
+        render();
+        tick();
+      })
+      .catch(function (err) {
+        inFlight = false;
+        dot.className = "bad";
+        statusEl.textContent = "更新失敗，30 秒後重試";
+        if (!lastPayload) {
+          listWrap.innerHTML = '<div class="status error"><span class="big">⚠️</span>' +
+            '無法連接 DATA.GOV.HK<br><span style="font-size:12px">' + String(err.message || err) + '</span></div>';
+        }
+        nextRefreshAt = Date.now() + REFRESH_MS;
+      });
+  }
+
+  refreshBtn.addEventListener("click", fetchETA);
+
+  fetchETA();
+  setInterval(tick, 1000);        // 倒數 + 分鐘數重算
+  setInterval(fetchETA, REFRESH_MS); // 每 30 秒抓新資料
+  window.addEventListener("online", fetchETA);
+})();
+</script>
+</body>
+</html>
